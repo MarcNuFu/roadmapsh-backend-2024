@@ -29,6 +29,11 @@ fun main(args: Array<String>) {
             existingTasks = tasks,
         )
 
+        Commands.LIST.cliValue -> CommandUtils.listTasks(
+            args = args,
+            existingTasks = tasks,
+        )
+
         else -> showUsage()
     }
 }
