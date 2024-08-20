@@ -114,4 +114,210 @@ class CommandUtilsTest {
             { assert(outputStream.toString().contains("Task added successfully (ID: ${task.id})")) },
         )
     }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN should display usage message if args size != 3
+        """
+    )
+    fun updateTaskTest0() {
+        // GIVEN
+        val args = arrayOf(generator.nextObject(String::class.java))
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.updateTask(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 0) {
+                    TaskUtils.getUpdateTask(
+                        task = any(),
+                        status = any()
+                    )
+                }
+            },
+            { assert(outputStream.toString().contains("Usage: update <task_id> <new_status>")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN should display error if id is not an Int
+        """
+    )
+    fun updateTaskTest1() {
+        // GIVEN
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            generator.nextObject(String::class.java),
+            generator.nextObject(TaskStatus::class.java).value,
+        )
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.updateTask(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 0) {
+                    TaskUtils.getUpdateTask(
+                        task = any(),
+                        status = any()
+                    )
+                }
+            },
+            { assert(outputStream.toString().contains("Task not found or invalid status.")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN should display error if id is not in task list
+        """
+    )
+    fun updateTaskTest2() {
+        // GIVEN
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            generator.nextObject(Int::class.java).toString(),
+            generator.nextObject(TaskStatus::class.java).value,
+        )
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.updateTask(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 0) {
+                    TaskUtils.getUpdateTask(
+                        task = any(),
+                        status = any()
+                    )
+                }
+            },
+            { assert(outputStream.toString().contains("Task not found or invalid status.")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN should display error if status is not valid
+        """
+    )
+    fun updateTaskTest3() {
+        // GIVEN
+        val tasks = generator.objects(Task::class.java, 5).toList()
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            tasks.first().id.toString(),
+            generator.nextObject(String::class.java),
+        )
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.updateTask(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 0) {
+                    TaskUtils.getUpdateTask(
+                        task = any(),
+                        status = any()
+                    )
+                }
+            },
+            { assert(outputStream.toString().contains("Task not found or invalid status.")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN should update task if all is valid
+        """
+    )
+    fun updateTaskTest4() {
+        // GIVEN
+        val tasks = generator.objects(Task::class.java, 5).toList()
+        val newStatus = generator.nextObject(TaskStatus::class.java)
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            tasks.first().id.toString(),
+            newStatus.value,
+        )
+        val updatedTask = generator.nextObject(Task::class.java)
+
+        mockkObject(TaskUtils)
+
+        every {
+            TaskUtils.getUpdateTask(
+                task = tasks.first(),
+                status = newStatus
+            )
+        } returns updatedTask
+
+        every {
+            TaskUtils.saveTasks(
+                tasks = tasks - tasks.first() + updatedTask,
+            )
+        } just Runs
+
+        // WHEN
+        CommandUtils.updateTask(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 1) {
+                    TaskUtils.getUpdateTask(
+                        task = tasks.first(),
+                        status = newStatus
+                    )
+                    TaskUtils.saveTasks(
+                        tasks = tasks - tasks.first() + updatedTask,
+                    )
+                }
+            },
+            { assert(outputStream.toString().isEmpty()) },
+        )
+    }
 }

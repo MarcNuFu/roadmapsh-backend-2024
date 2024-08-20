@@ -102,4 +102,37 @@ class TaskUtilsTest {
         // THEN
         assertEquals(expectedResult, result)
     }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN task and status
+        THEN should updated task
+        """
+    )
+    fun getUpdateTaskTest1() {
+        // GIVEN
+        val task = generator.nextObject(Task::class.java)
+        val newStatus = generator.nextObject(TaskStatus::class.java)
+        val now = LocalDateTime.now()
+
+        val expectedResult = task.copy(
+            status = newStatus.value,
+            updatedAt = now.toString(),
+        )
+
+        mockkStatic(LocalDateTime::class)
+        every {
+            LocalDateTime.now()
+        } returns now
+
+        // WHEN
+        val result = TaskUtils.getUpdateTask(
+            task = task,
+            status = newStatus,
+        )
+
+        // THEN
+        assertEquals(expectedResult, result)
+    }
 }

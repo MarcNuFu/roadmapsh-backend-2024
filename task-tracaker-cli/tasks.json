@@ -1,0 +1,16 @@
+[
+    {
+        "id": 2,
+        "description": "Lavar ropa1",
+        "status": "todo",
+        "createdAt": "2024-08-20T23:10:48.135956100",
+        "updatedAt": "2024-08-20T23:10:48.135956100"
+    },
+    {
+        "id": 1,
+        "description": "Lavar ropa2",
+        "status": "in-progress",
+        "createdAt": "2024-08-20T23:10:46.848822",
+        "updatedAt": "2024-08-20T23:10:46.848822"
+    }
+]
