@@ -56,7 +56,7 @@ class MainTest {
         assertAll(
             { verify(exactly = 1) { TaskUtils.loadTasks() } },
             { assert(outputStream.toString().contains("Usage: <command> [<args>]")) },
-            { assert(outputStream.toString().contains("Commands: add, ...")) }
+            { assert(outputStream.toString().contains("Commands: add, update, ...")) }
         )
     }
 
@@ -85,7 +85,7 @@ class MainTest {
         assertAll(
             { verify(exactly = 1) { TaskUtils.loadTasks() } },
             { assert(outputStream.toString().contains("Usage: <command> [<args>]")) },
-            { assert(outputStream.toString().contains("Commands: add, ...")) }
+            { assert(outputStream.toString().contains("Commands: add, update, ...")) }
         )
     }
 
@@ -98,8 +98,7 @@ class MainTest {
     )
     fun mainTest2() {
         // GIVEN
-        val taskDescription = generator.nextObject(String::class.java)
-        val args = arrayOf(Commands.ADD.cliValue, taskDescription)
+        val args = arrayOf(Commands.ADD.cliValue) + generator.objects(String::class.java, 5).toList().toTypedArray()
         val tasks = generator.objects(Task::class.java, 5).toList()
 
         mockkObject(TaskUtils)
@@ -123,6 +122,43 @@ class MainTest {
         assertAll(
             { verify(exactly = 1) { TaskUtils.loadTasks() } },
             { verify(exactly = 1) { CommandUtils.addTask(args = args, existingTasks = tasks) } },
+            { assert(outputStream.toString().isEmpty()) }
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args to update task
+        THEN should update task
+        """
+    )
+    fun mainTest3() {
+        // GIVEN
+        val args = arrayOf(Commands.UPDATE.cliValue) + generator.objects(String::class.java, 5).toList().toTypedArray()
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+        mockkObject(CommandUtils)
+
+        every {
+            TaskUtils.loadTasks()
+        } returns tasks
+
+        every {
+            CommandUtils.updateTask(
+                args = args,
+                existingTasks = tasks,
+            )
+        } just Runs
+
+        // WHEN
+        main(args)
+
+        // THEN
+        assertAll(
+            { verify(exactly = 1) { TaskUtils.loadTasks() } },
+            { verify(exactly = 1) { CommandUtils.updateTask(args = args, existingTasks = tasks) } },
             { assert(outputStream.toString().isEmpty()) }
         )
     }

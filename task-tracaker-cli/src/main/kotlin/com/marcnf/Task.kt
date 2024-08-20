@@ -14,5 +14,9 @@ data class Task(
 enum class TaskStatus(val value: String) {
     TODO("todo"),
     IN_PROGRESS("in-progress"),
-    DONE("done")
+    DONE("done");
+
+    companion object {
+        fun fromValue(value: String): TaskStatus? = values().find { it.value == value }
+    }
 }
