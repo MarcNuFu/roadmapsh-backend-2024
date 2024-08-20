@@ -105,4 +105,18 @@ object CommandUtils {
             }
         }
     }
+
+    fun listTasks(
+        args: Array<String>,
+        existingTasks: List<Task>,
+    ) {
+        if (args.size > 2) {
+            println("Usage: list <status>")
+        } else {
+            val status = args.getOrNull(1)
+            existingTasks
+                .filter { it.status == status || status == null }
+                .forEach { println(it) }
+        }
+    }
 }

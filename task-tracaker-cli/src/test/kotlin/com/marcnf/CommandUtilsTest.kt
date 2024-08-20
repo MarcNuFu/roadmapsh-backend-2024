@@ -684,4 +684,82 @@ class CommandUtilsTest {
             { assert(outputStream.toString().isEmpty()) },
         )
     }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN listTasks should display usage message if args size > 2
+        """
+    )
+    fun listTasksTest0() {
+        // GIVEN
+        val args = generator.objects(String::class.java, 5).toList().toTypedArray()
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.listTasks(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            { assert(outputStream.toString().contains("Usage: list <status>")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN listTasks should display all tasks when args has no filter
+        """
+    )
+    fun listTasksTest1() {
+        // GIVEN
+        val args = generator.objects(String::class.java, 1).toList().toTypedArray()
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        // WHEN
+        CommandUtils.listTasks(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        tasks.forEach {
+            assert(outputStream.toString().contains(it.toString()))
+        }
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN listTasks should display filtered tasks when args has filter
+        """
+    )
+    fun listTasksTest2() {
+        // GIVEN
+        val tasks = generator.objects(Task::class.java, 5).toList()
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            tasks.first().status
+        )
+
+        // WHEN
+        CommandUtils.listTasks(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assert(outputStream.toString().contains(tasks.first().toString()))
+        (tasks - tasks.first()).forEach {
+            assert(!outputStream.toString().contains(it.toString()))
+        }
+    }
 }
