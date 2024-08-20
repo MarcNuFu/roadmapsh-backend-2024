@@ -1,16 +1,19 @@
 package com.marcnf
 
-import io.mockk.*
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockkObject
+import io.mockk.unmockkAll
+import io.mockk.verify
 import org.jeasy.random.EasyRandom
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertAll
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
-import kotlin.streams.toList
 
 class MainTest {
     private val generator: EasyRandom = EasyRandom()
@@ -24,6 +27,7 @@ class MainTest {
 
     @AfterEach
     fun tearDown() {
+        unmockkAll()
         System.setOut(originalOut)
     }
 
@@ -31,7 +35,7 @@ class MainTest {
     @DisplayName(
         """
         GIVEN empty args
-        THEN should display ussage message
+        THEN should display usage message
         """
     )
     fun mainTest0() {
@@ -60,7 +64,7 @@ class MainTest {
     @DisplayName(
         """
         GIVEN wrong args
-        THEN should display ussage message
+        THEN should display usage message
         """
     )
     fun mainTest1() {
