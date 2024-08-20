@@ -237,4 +237,42 @@ class MainTest {
             { assert(outputStream.toString().isEmpty()) }
         )
     }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args to mark done task
+        THEN main should delete task
+        """
+    )
+    fun mainTest6() {
+        // GIVEN
+        val args = arrayOf(Commands.MARK_DONE.cliValue) +
+                generator.objects(String::class.java, 5).toList().toTypedArray()
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+        mockkObject(CommandUtils)
+
+        every {
+            TaskUtils.loadTasks()
+        } returns tasks
+
+        every {
+            CommandUtils.markTaskDone(
+                args = args,
+                existingTasks = tasks,
+            )
+        } just Runs
+
+        // WHEN
+        main(args)
+
+        // THEN
+        assertAll(
+            { verify(exactly = 1) { TaskUtils.loadTasks() } },
+            { verify(exactly = 1) { CommandUtils.markTaskDone(args = args, existingTasks = tasks) } },
+            { assert(outputStream.toString().isEmpty()) }
+        )
+    }
 }

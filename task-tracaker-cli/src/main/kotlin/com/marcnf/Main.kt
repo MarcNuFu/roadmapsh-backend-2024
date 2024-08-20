@@ -24,6 +24,11 @@ fun main(args: Array<String>) {
             existingTasks = tasks,
         )
 
+        Commands.MARK_DONE.cliValue -> CommandUtils.markTaskDone(
+            args = args,
+            existingTasks = tasks,
+        )
+
         else -> showUsage()
     }
 }

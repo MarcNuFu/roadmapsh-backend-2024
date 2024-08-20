@@ -420,9 +420,9 @@ class CommandUtilsTest {
         assertAll(
             {
                 verify(exactly = 0) {
-                    TaskUtils.getUpdatedTask(
+                    TaskUtils.getMarkedTask(
                         task = any(),
-                        description = any()
+                        status = TaskStatus.IN_PROGRESS,
                     )
                 }
             },
@@ -457,9 +457,9 @@ class CommandUtilsTest {
         assertAll(
             {
                 verify(exactly = 0) {
-                    TaskUtils.getUpdatedTask(
+                    TaskUtils.getMarkedTask(
                         task = any(),
-                        description = any()
+                        status = TaskStatus.IN_PROGRESS,
                     )
                 }
             },
@@ -512,6 +512,169 @@ class CommandUtilsTest {
                     TaskUtils.getMarkedTask(
                         task = tasks.first(),
                         status = TaskStatus.IN_PROGRESS,
+                    )
+                    TaskUtils.saveTasks(
+                        tasks = tasks - tasks.first() + markedTask,
+                    )
+                }
+            },
+            { assert(outputStream.toString().isEmpty()) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN markTaskDone should display usage message if args size != 2
+        """
+    )
+    fun markTaskDoneTest0() {
+        // GIVEN
+        val args = arrayOf(generator.nextObject(String::class.java))
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.markTaskDone(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 0) {
+                    TaskUtils.getMarkedTask(
+                        task = any(),
+                        status = TaskStatus.DONE,
+                    )
+                }
+            },
+            { assert(outputStream.toString().contains("Usage: mark-done <task_id>")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN markTaskDone should display error if id is not an Int
+        """
+    )
+    fun markTaskDoneProgressTest1() {
+        // GIVEN
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            generator.nextObject(String::class.java),
+        )
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.markTaskDone(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 0) {
+                    TaskUtils.getMarkedTask(
+                        task = any(),
+                        status = TaskStatus.DONE,
+                    )
+                }
+            },
+            { assert(outputStream.toString().contains("Task not found")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN markTaskDone should display error if id is not in task list
+        """
+    )
+    fun markTaskDoneTest2() {
+        // GIVEN
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            generator.nextObject(Int::class.java).toString(),
+        )
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.markTaskDone(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 0) {
+                    TaskUtils.getMarkedTask(
+                        task = any(),
+                        status = TaskStatus.DONE,
+                    )
+                }
+            },
+            { assert(outputStream.toString().contains("Task not found")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN markTaskDone should mark in progress task if all is valid
+        """
+    )
+    fun markTaskDoneProgressTest3() {
+        // GIVEN
+        val tasks = generator.objects(Task::class.java, 5).toList()
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            tasks.first().id.toString(),
+        )
+
+        val markedTask = generator.nextObject(Task::class.java)
+
+        mockkObject(TaskUtils)
+
+        every {
+            TaskUtils.getMarkedTask(
+                task = tasks.first(),
+                status = TaskStatus.DONE,
+            )
+        } returns markedTask
+
+        every {
+            TaskUtils.saveTasks(
+                tasks = tasks - tasks.first() + markedTask,
+            )
+        } just Runs
+
+        // WHEN
+        CommandUtils.markTaskDone(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 1) {
+                    TaskUtils.getMarkedTask(
+                        task = tasks.first(),
+                        status = TaskStatus.DONE,
                     )
                     TaskUtils.saveTasks(
                         tasks = tasks - tasks.first() + markedTask,
