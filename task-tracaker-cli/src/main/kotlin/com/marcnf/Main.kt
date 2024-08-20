@@ -19,11 +19,21 @@ fun main(args: Array<String>) {
             existingTasks = tasks,
         )
 
+        Commands.MARK_IN_PROGRESS.cliValue -> CommandUtils.markTaskInProgress(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        Commands.MARK_DONE.cliValue -> CommandUtils.markTaskDone(
+            args = args,
+            existingTasks = tasks,
+        )
+
         else -> showUsage()
     }
 }
 
 private fun showUsage() {
     println("Usage: <command> [<args>]")
-    println("Commands: add, update, delete, ...")
+    println("Commands: add, update, delete, mark-in-progress ...")
 }

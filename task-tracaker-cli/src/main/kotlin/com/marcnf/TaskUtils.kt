@@ -47,11 +47,19 @@ object TaskUtils {
         }
     }
 
-    fun getUpdateTask(
+    fun getUpdatedTask(
         task: Task,
         description: String
     ): Task = task.copy(
         description = description,
+        updatedAt = LocalDateTime.now().toString(),
+    )
+
+    fun getMarkedTask(
+        task: Task,
+        status: TaskStatus,
+    ): Task = task.copy(
+        status = status.value,
         updatedAt = LocalDateTime.now().toString(),
     )
 }

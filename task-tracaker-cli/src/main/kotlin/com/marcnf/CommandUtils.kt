@@ -33,7 +33,7 @@ object CommandUtils {
             if (taskToUpdate == null) {
                 println("Task not found")
             } else {
-                val updatedTask = TaskUtils.getUpdateTask(
+                val updatedTask = TaskUtils.getUpdatedTask(
                     task = taskToUpdate,
                     description = description
                 )
@@ -57,6 +57,50 @@ object CommandUtils {
             } else {
                 TaskUtils.saveTasks(
                     tasks = existingTasks - taskToDelete,
+                )
+            }
+        }
+    }
+
+    fun markTaskInProgress(
+        args: Array<String>,
+        existingTasks: List<Task>,
+    ) {
+        if (args.size != 2) {
+            println("Usage: mark-in-progress <task_id>")
+        } else {
+            val taskToMark = existingTasks.find { it.id == args[1].toIntOrNull() }
+            if (taskToMark == null) {
+                println("Task not found")
+            } else {
+                val markedTask = TaskUtils.getMarkedTask(
+                    task = taskToMark,
+                    status = TaskStatus.IN_PROGRESS,
+                )
+                TaskUtils.saveTasks(
+                    tasks = existingTasks - taskToMark + markedTask,
+                )
+            }
+        }
+    }
+
+    fun markTaskDone(
+        args: Array<String>,
+        existingTasks: List<Task>,
+    ) {
+        if (args.size != 2) {
+            println("Usage: mark-done <task_id>")
+        } else {
+            val taskToMark = existingTasks.find { it.id == args[1].toIntOrNull() }
+            if (taskToMark == null) {
+                println("Task not found")
+            } else {
+                val markedTask = TaskUtils.getMarkedTask(
+                    task = taskToMark,
+                    status = TaskStatus.DONE,
+                )
+                TaskUtils.saveTasks(
+                    tasks = existingTasks - taskToMark + markedTask,
                 )
             }
         }

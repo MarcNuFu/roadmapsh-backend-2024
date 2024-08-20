@@ -107,10 +107,10 @@ class TaskUtilsTest {
     @DisplayName(
         """
         GIVEN task and description
-        THEN getUpdateTask should updated task
+        THEN getUpdatedTask should updated task
         """
     )
-    fun getUpdateTaskTest1() {
+    fun getUpdatedTaskTest1() {
         // GIVEN
         val task = generator.nextObject(Task::class.java)
         val description = generator.nextObject(String::class.java)
@@ -127,7 +127,7 @@ class TaskUtilsTest {
         } returns now
 
         // WHEN
-        val result = TaskUtils.getUpdateTask(
+        val result = TaskUtils.getUpdatedTask(
             task = task,
             description = description,
         )
