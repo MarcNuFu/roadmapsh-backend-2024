@@ -14,11 +14,16 @@ fun main(args: Array<String>) {
             existingTasks = tasks,
         )
 
+        Commands.DELETE.cliValue -> CommandUtils.deleteTask(
+            args = args,
+            existingTasks = tasks,
+        )
+
         else -> showUsage()
     }
 }
 
 private fun showUsage() {
     println("Usage: <command> [<args>]")
-    println("Commands: add, update, ...")
+    println("Commands: add, update, delete, ...")
 }
