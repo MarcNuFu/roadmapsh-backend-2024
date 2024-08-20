@@ -35,7 +35,7 @@ class TaskUtilsTest {
     @DisplayName(
         """
         GIVEN empty tasks and description
-        THEN should return new Task with id = 1
+        THEN generateTask should return new Task with id = 1
         """
     )
     fun generateTaskTest0() {
@@ -71,7 +71,7 @@ class TaskUtilsTest {
     @DisplayName(
         """
         GIVEN empty tasks and description
-        THEN should return new Task with id = greatest + 1
+        THEN generateTask should return new Task with id = greatest + 1
         """
     )
     fun generateTaskTest1() {
@@ -107,7 +107,7 @@ class TaskUtilsTest {
     @DisplayName(
         """
         GIVEN task and status
-        THEN should updated task
+        THEN getUpdateTask should updated task
         """
     )
     fun getUpdateTaskTest1() {

@@ -43,4 +43,22 @@ object CommandUtils {
             }
         }
     }
+
+    fun deleteTask(
+        args: Array<String>,
+        existingTasks: List<Task>,
+    ) {
+        if (args.size != 2) {
+            println("Usage: delete <task_id>")
+        } else {
+            val taskToDelete = existingTasks.find { it.id == args[1].toIntOrNull() }
+            if (taskToDelete == null) {
+                println("Task not found")
+            } else {
+                TaskUtils.saveTasks(
+                    tasks = existingTasks - taskToDelete,
+                )
+            }
+        }
+    }
 }

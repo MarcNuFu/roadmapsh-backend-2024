@@ -56,7 +56,7 @@ class MainTest {
         assertAll(
             { verify(exactly = 1) { TaskUtils.loadTasks() } },
             { assert(outputStream.toString().contains("Usage: <command> [<args>]")) },
-            { assert(outputStream.toString().contains("Commands: add, update, ...")) }
+            { assert(outputStream.toString().contains("Commands: add, update, delete, ...")) }
         )
     }
 
@@ -85,7 +85,7 @@ class MainTest {
         assertAll(
             { verify(exactly = 1) { TaskUtils.loadTasks() } },
             { assert(outputStream.toString().contains("Usage: <command> [<args>]")) },
-            { assert(outputStream.toString().contains("Commands: add, update, ...")) }
+            { assert(outputStream.toString().contains("Commands: add, update, delete, ...")) }
         )
     }
 
@@ -159,6 +159,43 @@ class MainTest {
         assertAll(
             { verify(exactly = 1) { TaskUtils.loadTasks() } },
             { verify(exactly = 1) { CommandUtils.updateTask(args = args, existingTasks = tasks) } },
+            { assert(outputStream.toString().isEmpty()) }
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args to delete task
+        THEN should delete task
+        """
+    )
+    fun mainTest4() {
+        // GIVEN
+        val args = arrayOf(Commands.DELETE.cliValue) + generator.objects(String::class.java, 5).toList().toTypedArray()
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+        mockkObject(CommandUtils)
+
+        every {
+            TaskUtils.loadTasks()
+        } returns tasks
+
+        every {
+            CommandUtils.deleteTask(
+                args = args,
+                existingTasks = tasks,
+            )
+        } just Runs
+
+        // WHEN
+        main(args)
+
+        // THEN
+        assertAll(
+            { verify(exactly = 1) { TaskUtils.loadTasks() } },
+            { verify(exactly = 1) { CommandUtils.deleteTask(args = args, existingTasks = tasks) } },
             { assert(outputStream.toString().isEmpty()) }
         )
     }

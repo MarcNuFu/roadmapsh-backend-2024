@@ -33,7 +33,7 @@ class CommandUtilsTest {
     @DisplayName(
         """
         GIVEN args and tasks
-        THEN should display usage message if args size < 2
+        THEN addTask should display usage message if args size < 2
         """
     )
     fun addTaskTest0() {
@@ -67,7 +67,7 @@ class CommandUtilsTest {
     @DisplayName(
         """
         GIVEN args and tasks
-        THEN should get description and save new task
+        THEN addTask should get description and save new task
         """
     )
     fun addTaskTest1() {
@@ -119,7 +119,7 @@ class CommandUtilsTest {
     @DisplayName(
         """
         GIVEN args and tasks
-        THEN should display usage message if args size != 3
+        THEN updateTask should display usage message if args size != 3
         """
     )
     fun updateTaskTest0() {
@@ -153,7 +153,7 @@ class CommandUtilsTest {
     @DisplayName(
         """
         GIVEN args and tasks
-        THEN should display error if id is not an Int
+        THEN updateTask should display error if id is not an Int
         """
     )
     fun updateTaskTest1() {
@@ -192,7 +192,7 @@ class CommandUtilsTest {
     @DisplayName(
         """
         GIVEN args and tasks
-        THEN should display error if id is not in task list
+        THEN updateTask should display error if id is not in task list
         """
     )
     fun updateTaskTest2() {
@@ -231,7 +231,7 @@ class CommandUtilsTest {
     @DisplayName(
         """
         GIVEN args and tasks
-        THEN should display error if status is not valid
+        THEN updateTask should display error if status is not valid
         """
     )
     fun updateTaskTest3() {
@@ -269,7 +269,7 @@ class CommandUtilsTest {
     @DisplayName(
         """
         GIVEN args and tasks
-        THEN should update task if all is valid
+        THEN updateTask should update task if all is valid
         """
     )
     fun updateTaskTest4() {
@@ -314,6 +314,82 @@ class CommandUtilsTest {
                     )
                     TaskUtils.saveTasks(
                         tasks = tasks - tasks.first() + updatedTask,
+                    )
+                }
+            },
+            { assert(outputStream.toString().isEmpty()) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN deleteTask should display usage message if args size != 2
+        """
+    )
+    fun deleteTaskTest0() {
+        // GIVEN
+        val args = arrayOf(generator.nextObject(String::class.java))
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.deleteTask(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 0) {
+                    TaskUtils.saveTasks(
+                        tasks = any(),
+                    )
+                }
+            },
+            { assert(outputStream.toString().contains("Usage: delete <task_id>")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN deleteTask should delete task if all is valid
+        """
+    )
+    fun deleteTaskTest1() {
+        // GIVEN
+        val tasks = generator.objects(Task::class.java, 5).toList()
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            tasks.first().id.toString(),
+        )
+
+        mockkObject(TaskUtils)
+
+        every {
+            TaskUtils.saveTasks(
+                tasks = tasks - tasks.first(),
+            )
+        } just Runs
+
+
+        // WHEN
+        CommandUtils.deleteTask(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 1) {
+                    TaskUtils.saveTasks(
+                        tasks = tasks - tasks.first(),
                     )
                 }
             },
