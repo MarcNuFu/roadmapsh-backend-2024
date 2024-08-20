@@ -49,9 +49,9 @@ object TaskUtils {
 
     fun getUpdateTask(
         task: Task,
-        status: TaskStatus
+        description: String
     ): Task = task.copy(
-        status = status.value,
+        description = description,
         updatedAt = LocalDateTime.now().toString(),
     )
 }

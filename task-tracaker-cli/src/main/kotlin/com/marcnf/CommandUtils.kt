@@ -24,18 +24,18 @@ object CommandUtils {
         args: Array<String>,
         existingTasks: List<Task>,
     ) {
-        if (args.size != 3) {
-            println("Usage: update <task_id> <new_status>")
+        if (args.size < 3) {
+            println("Usage: update <task_id> <new_description>")
         } else {
             val taskToUpdate = existingTasks.find { it.id == args[1].toIntOrNull() }
-            val newStatus = TaskStatus.fromValue(args[2])
+            val description = args.drop(2).joinToString(" ")
 
-            if (newStatus == null || taskToUpdate == null) {
-                println("Task not found or invalid status.")
+            if (taskToUpdate == null) {
+                println("Task not found")
             } else {
                 val updatedTask = TaskUtils.getUpdateTask(
                     task = taskToUpdate,
-                    status = newStatus
+                    description = description
                 )
                 TaskUtils.saveTasks(
                     tasks = existingTasks - taskToUpdate + updatedTask,

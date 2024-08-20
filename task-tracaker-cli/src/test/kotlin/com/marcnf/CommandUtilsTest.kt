@@ -119,7 +119,7 @@ class CommandUtilsTest {
     @DisplayName(
         """
         GIVEN args and tasks
-        THEN updateTask should display usage message if args size != 3
+        THEN updateTask should display usage message if args size < 3
         """
     )
     fun updateTaskTest0() {
@@ -141,11 +141,11 @@ class CommandUtilsTest {
                 verify(exactly = 0) {
                     TaskUtils.getUpdateTask(
                         task = any(),
-                        status = any()
+                        description = any()
                     )
                 }
             },
-            { assert(outputStream.toString().contains("Usage: update <task_id> <new_status>")) },
+            { assert(outputStream.toString().contains("Usage: update <task_id> <new_description>")) },
         )
     }
 
@@ -161,10 +161,9 @@ class CommandUtilsTest {
         val args = arrayOf(
             generator.nextObject(String::class.java),
             generator.nextObject(String::class.java),
-            generator.nextObject(TaskStatus::class.java).value,
+            generator.nextObject(String::class.java),
         )
         val tasks = generator.objects(Task::class.java, 5).toList()
-
 
         mockkObject(TaskUtils)
 
@@ -180,11 +179,11 @@ class CommandUtilsTest {
                 verify(exactly = 0) {
                     TaskUtils.getUpdateTask(
                         task = any(),
-                        status = any()
+                        description = any()
                     )
                 }
             },
-            { assert(outputStream.toString().contains("Task not found or invalid status.")) },
+            { assert(outputStream.toString().contains("Task not found")) },
         )
     }
 
@@ -200,10 +199,9 @@ class CommandUtilsTest {
         val args = arrayOf(
             generator.nextObject(String::class.java),
             generator.nextObject(Int::class.java).toString(),
-            generator.nextObject(TaskStatus::class.java).value,
+            generator.nextObject(String::class.java),
         )
         val tasks = generator.objects(Task::class.java, 5).toList()
-
 
         mockkObject(TaskUtils)
 
@@ -219,49 +217,11 @@ class CommandUtilsTest {
                 verify(exactly = 0) {
                     TaskUtils.getUpdateTask(
                         task = any(),
-                        status = any()
+                        description = any()
                     )
                 }
             },
-            { assert(outputStream.toString().contains("Task not found or invalid status.")) },
-        )
-    }
-
-    @Test
-    @DisplayName(
-        """
-        GIVEN args and tasks
-        THEN updateTask should display error if status is not valid
-        """
-    )
-    fun updateTaskTest3() {
-        // GIVEN
-        val tasks = generator.objects(Task::class.java, 5).toList()
-        val args = arrayOf(
-            generator.nextObject(String::class.java),
-            tasks.first().id.toString(),
-            generator.nextObject(String::class.java),
-        )
-
-        mockkObject(TaskUtils)
-
-        // WHEN
-        CommandUtils.updateTask(
-            args = args,
-            existingTasks = tasks,
-        )
-
-        // THEN
-        assertAll(
-            {
-                verify(exactly = 0) {
-                    TaskUtils.getUpdateTask(
-                        task = any(),
-                        status = any()
-                    )
-                }
-            },
-            { assert(outputStream.toString().contains("Task not found or invalid status.")) },
+            { assert(outputStream.toString().contains("Task not found")) },
         )
     }
 
@@ -272,23 +232,24 @@ class CommandUtilsTest {
         THEN updateTask should update task if all is valid
         """
     )
-    fun updateTaskTest4() {
+    fun updateTaskTest3() {
         // GIVEN
         val tasks = generator.objects(Task::class.java, 5).toList()
-        val newStatus = generator.nextObject(TaskStatus::class.java)
         val args = arrayOf(
             generator.nextObject(String::class.java),
             tasks.first().id.toString(),
-            newStatus.value,
-        )
+        ) + generator.objects(String::class.java, 5).toList().toTypedArray()
+
         val updatedTask = generator.nextObject(Task::class.java)
+
+        val description = args.drop(2).joinToString(" ")
 
         mockkObject(TaskUtils)
 
         every {
             TaskUtils.getUpdateTask(
                 task = tasks.first(),
-                status = newStatus
+                description = description
             )
         } returns updatedTask
 
@@ -310,7 +271,7 @@ class CommandUtilsTest {
                 verify(exactly = 1) {
                     TaskUtils.getUpdateTask(
                         task = tasks.first(),
-                        status = newStatus
+                        description = description
                     )
                     TaskUtils.saveTasks(
                         tasks = tasks - tasks.first() + updatedTask,
@@ -376,7 +337,6 @@ class CommandUtilsTest {
                 tasks = tasks - tasks.first(),
             )
         } just Runs
-
 
         // WHEN
         CommandUtils.deleteTask(
