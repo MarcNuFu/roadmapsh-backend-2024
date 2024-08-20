@@ -4,6 +4,7 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockkObject
+import io.mockk.unmockkAll
 import io.mockk.verify
 import org.jeasy.random.EasyRandom
 import org.junit.jupiter.api.AfterEach
@@ -26,6 +27,7 @@ class CommandUtilsTest {
 
     @AfterEach
     fun tearDown() {
+        unmockkAll()
         System.setOut(originalOut)
     }
 
@@ -139,7 +141,7 @@ class CommandUtilsTest {
         assertAll(
             {
                 verify(exactly = 0) {
-                    TaskUtils.getUpdateTask(
+                    TaskUtils.getUpdatedTask(
                         task = any(),
                         description = any()
                     )
@@ -177,7 +179,7 @@ class CommandUtilsTest {
         assertAll(
             {
                 verify(exactly = 0) {
-                    TaskUtils.getUpdateTask(
+                    TaskUtils.getUpdatedTask(
                         task = any(),
                         description = any()
                     )
@@ -215,7 +217,7 @@ class CommandUtilsTest {
         assertAll(
             {
                 verify(exactly = 0) {
-                    TaskUtils.getUpdateTask(
+                    TaskUtils.getUpdatedTask(
                         task = any(),
                         description = any()
                     )
@@ -247,7 +249,7 @@ class CommandUtilsTest {
         mockkObject(TaskUtils)
 
         every {
-            TaskUtils.getUpdateTask(
+            TaskUtils.getUpdatedTask(
                 task = tasks.first(),
                 description = description
             )
@@ -269,7 +271,7 @@ class CommandUtilsTest {
         assertAll(
             {
                 verify(exactly = 1) {
-                    TaskUtils.getUpdateTask(
+                    TaskUtils.getUpdatedTask(
                         task = tasks.first(),
                         description = description
                     )
@@ -350,6 +352,169 @@ class CommandUtilsTest {
                 verify(exactly = 1) {
                     TaskUtils.saveTasks(
                         tasks = tasks - tasks.first(),
+                    )
+                }
+            },
+            { assert(outputStream.toString().isEmpty()) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN markTaskInProgress should display usage message if args size != 2
+        """
+    )
+    fun markTaskInProgressTest0() {
+        // GIVEN
+        val args = arrayOf(generator.nextObject(String::class.java))
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.markTaskInProgress(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 0) {
+                    TaskUtils.getMarkedTask(
+                        task = any(),
+                        status = TaskStatus.IN_PROGRESS,
+                    )
+                }
+            },
+            { assert(outputStream.toString().contains("Usage: mark-in-progress <task_id>")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN markTaskInProgress should display error if id is not an Int
+        """
+    )
+    fun markTaskInProgressTest1() {
+        // GIVEN
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            generator.nextObject(String::class.java),
+        )
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.markTaskInProgress(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 0) {
+                    TaskUtils.getUpdatedTask(
+                        task = any(),
+                        description = any()
+                    )
+                }
+            },
+            { assert(outputStream.toString().contains("Task not found")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN markTaskInProgress should display error if id is not in task list
+        """
+    )
+    fun markTaskInProgressTest2() {
+        // GIVEN
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            generator.nextObject(Int::class.java).toString(),
+        )
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+
+        // WHEN
+        CommandUtils.markTaskInProgress(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 0) {
+                    TaskUtils.getUpdatedTask(
+                        task = any(),
+                        description = any()
+                    )
+                }
+            },
+            { assert(outputStream.toString().contains("Task not found")) },
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args and tasks
+        THEN markTaskInProgress should mark in progress task if all is valid
+        """
+    )
+    fun markTaskInProgressTest3() {
+        // GIVEN
+        val tasks = generator.objects(Task::class.java, 5).toList()
+        val args = arrayOf(
+            generator.nextObject(String::class.java),
+            tasks.first().id.toString(),
+        )
+
+        val markedTask = generator.nextObject(Task::class.java)
+
+        mockkObject(TaskUtils)
+
+        every {
+            TaskUtils.getMarkedTask(
+                task = tasks.first(),
+                status = TaskStatus.IN_PROGRESS,
+            )
+        } returns markedTask
+
+        every {
+            TaskUtils.saveTasks(
+                tasks = tasks - tasks.first() + markedTask,
+            )
+        } just Runs
+
+        // WHEN
+        CommandUtils.markTaskInProgress(
+            args = args,
+            existingTasks = tasks,
+        )
+
+        // THEN
+        assertAll(
+            {
+                verify(exactly = 1) {
+                    TaskUtils.getMarkedTask(
+                        task = tasks.first(),
+                        status = TaskStatus.IN_PROGRESS,
+                    )
+                    TaskUtils.saveTasks(
+                        tasks = tasks - tasks.first() + markedTask,
                     )
                 }
             },

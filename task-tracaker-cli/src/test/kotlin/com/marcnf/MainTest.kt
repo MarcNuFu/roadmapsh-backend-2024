@@ -35,7 +35,7 @@ class MainTest {
     @DisplayName(
         """
         GIVEN empty args
-        THEN should display usage message
+        THEN main should display usage message
         """
     )
     fun mainTest0() {
@@ -56,7 +56,7 @@ class MainTest {
         assertAll(
             { verify(exactly = 1) { TaskUtils.loadTasks() } },
             { assert(outputStream.toString().contains("Usage: <command> [<args>]")) },
-            { assert(outputStream.toString().contains("Commands: add, update, delete, ...")) }
+            { assert(outputStream.toString().contains("Commands: add, update, delete, mark-in-progress ...")) }
         )
     }
 
@@ -64,7 +64,7 @@ class MainTest {
     @DisplayName(
         """
         GIVEN wrong args
-        THEN should display usage message
+        THEN main should display usage message
         """
     )
     fun mainTest1() {
@@ -85,7 +85,7 @@ class MainTest {
         assertAll(
             { verify(exactly = 1) { TaskUtils.loadTasks() } },
             { assert(outputStream.toString().contains("Usage: <command> [<args>]")) },
-            { assert(outputStream.toString().contains("Commands: add, update, delete, ...")) }
+            { assert(outputStream.toString().contains("Commands: add, update, delete, mark-in-progress ...")) }
         )
     }
 
@@ -93,7 +93,7 @@ class MainTest {
     @DisplayName(
         """
         GIVEN args to add task
-        THEN should load task and add one
+        THEN main should load task and add one
         """
     )
     fun mainTest2() {
@@ -130,7 +130,7 @@ class MainTest {
     @DisplayName(
         """
         GIVEN args to update task
-        THEN should update task
+        THEN main should update task
         """
     )
     fun mainTest3() {
@@ -167,7 +167,7 @@ class MainTest {
     @DisplayName(
         """
         GIVEN args to delete task
-        THEN should delete task
+        THEN main should delete task
         """
     )
     fun mainTest4() {
@@ -196,6 +196,44 @@ class MainTest {
         assertAll(
             { verify(exactly = 1) { TaskUtils.loadTasks() } },
             { verify(exactly = 1) { CommandUtils.deleteTask(args = args, existingTasks = tasks) } },
+            { assert(outputStream.toString().isEmpty()) }
+        )
+    }
+
+    @Test
+    @DisplayName(
+        """
+        GIVEN args to mark in progress task
+        THEN main should delete task
+        """
+    )
+    fun mainTest5() {
+        // GIVEN
+        val args = arrayOf(Commands.MARK_IN_PROGRESS.cliValue) +
+                generator.objects(String::class.java, 5).toList().toTypedArray()
+        val tasks = generator.objects(Task::class.java, 5).toList()
+
+        mockkObject(TaskUtils)
+        mockkObject(CommandUtils)
+
+        every {
+            TaskUtils.loadTasks()
+        } returns tasks
+
+        every {
+            CommandUtils.markTaskInProgress(
+                args = args,
+                existingTasks = tasks,
+            )
+        } just Runs
+
+        // WHEN
+        main(args)
+
+        // THEN
+        assertAll(
+            { verify(exactly = 1) { TaskUtils.loadTasks() } },
+            { verify(exactly = 1) { CommandUtils.markTaskInProgress(args = args, existingTasks = tasks) } },
             { assert(outputStream.toString().isEmpty()) }
         )
     }
