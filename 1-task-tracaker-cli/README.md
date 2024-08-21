@@ -9,7 +9,7 @@ This is a solution for [Task Tracker](https://roadmap.sh/projects/task-tracker) 
 1. **Clone the repository:**
 ```bash
 git clone https://github.com/MarcNuFu/roadmapsh-backend-2024.git
-cd roadmapsh-backend-2024/task-tracaker-cli
+cd roadmapsh-backend-2024/1-task-tracaker-cli
 ```
 
 2. **Compile the source code:**
