@@ -4,4 +4,4 @@ This repository contains a list of project solutions for the [Spring Boot Develo
 
 ### Beginner Projects
 
-1. [Task Tracker](/task-tracaker-cli)
+1. [Task Tracker](/task-tracaker-cli) ([detail](https://roadmap.sh/projects/task-tracker))
