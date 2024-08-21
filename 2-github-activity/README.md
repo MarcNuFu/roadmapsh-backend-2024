@@ -18,8 +18,9 @@ mvn clean package
 ```
 
 3. **Run:**
-
-TODO
+```bash
+java -jar target/github-activity-1.0-SNAPSHOT-jar-with-dependencies.jar <username>
+```
 
 ## Usage
 
